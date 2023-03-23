@@ -1,0 +1,1 @@
+import{_ as a,o as e,c as t,N as n}from"./chunks/framework.f5290017.js";const _=JSON.parse('{"title":"Money Manager","description":"","frontmatter":{},"headers":[],"relativePath":"money-manager/index.md"}'),r={name:"money-manager/index.md"},o=n("",6),s=[o];function i(c,d,m,l,u,p){return e(),t("div",null,s)}const b=a(r,[["render",i]]);export{_ as __pageData,b as default};
