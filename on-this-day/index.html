@@ -130,15 +130,7 @@
        */
       function maybeEnableButtons() {
         if (gapiInited && gisInited) {
-          const tokenRaw = localStorage.getItem('token');
-          const token = tokenRaw ? JSON.parse(tokenRaw) : null;
-          console.log(`token`, token);
-          if (token) {
-            gapi.client.setToken(token);
-            displayEvents();
-          } else {
             document.getElementById('authorize_button').style.display = 'block';
-          }
         }
       }
 
@@ -152,7 +144,6 @@
           }
           document.getElementById('signout_button').style.display = 'none';
           document.getElementById('authorize_button').innerText = 'Refresh';
-          localStorage.setItem('token', JSON.stringify(gapi.client.getToken()));
           await displayEvents();
         };
 
@@ -193,7 +184,7 @@
         today.setMinutes(0);
         today.setHours(0);
         const data = [];
-        for (let yearOffset = 0; yearOffset < 25; yearOffset++) {
+        for (let yearOffset = 1; yearOffset < 25; yearOffset++) {
           const start = new Date(today);
           start.setFullYear(today.getFullYear() - yearOffset);
           const end = new Date(start);
