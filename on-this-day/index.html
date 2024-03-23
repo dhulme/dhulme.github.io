@@ -48,6 +48,9 @@
         font-family: inherit;
         font-size: 1.25rem;
         border: 1px solid;
+        padding: 0.5rem 1rem;
+        margin: auto;
+        margin-bottom: 1.5rem;
       }
 
       button:hover {
@@ -196,7 +199,7 @@
                 'n7lmgc9apucj9pd8ltronvg8g4@group.calendar.google.com',
               timeMin: start.toISOString(),
               timeMax: end.toISOString(),
-              maxResults: 1,
+              maxResults: 10,
             },
           });
           data.push({
@@ -205,7 +208,7 @@
               calendarId: 'primary',
               timeMin: start.toISOString(),
               timeMax: end.toISOString(),
-              maxResults: 1,
+              maxResults: 10,
             },
           });
         }
@@ -238,23 +241,25 @@
           yearTitle.classList.add('year-title');
           year.appendChild(yearTitle);
 
-          const event = document.createElement('div');
-          event.classList.add('event');
-          const eventTitle = document.createElement('div');
-          eventTitle.classList.add('event-title');
-          eventTitle.innerText = item.response.result.items[0].summary;
-          event.appendChild(eventTitle);
-          const descriptionText = item.response.result.items[0].description;
-          if (descriptionText) {
-            const description = document.createElement('div');
-            description.classList.add('event-description');
-            description.classList.add('main-text');
-            description.innerText = descriptionText;
-            event.appendChild(description);
-          } else {
-            eventTitle.classList.add('main-text');
+          for (const eventItem of item.response.result.items) {
+            const event = document.createElement('div');
+            event.classList.add('event');
+            const eventTitle = document.createElement('div');
+            eventTitle.classList.add('event-title');
+            eventTitle.innerText = eventItem.summary;
+            event.appendChild(eventTitle);
+            const descriptionText = eventItem.description;
+            if (descriptionText) {
+              const description = document.createElement('div');
+              description.classList.add('event-description');
+              description.classList.add('main-text');
+              description.innerText = descriptionText;
+              event.appendChild(description);
+            } else {
+              eventTitle.classList.add('main-text');
+            }
+            year.appendChild(event);
           }
-          year.appendChild(event);
 
           document.getElementById('events').appendChild(year);
         }
