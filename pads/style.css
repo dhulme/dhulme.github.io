@@ -8,6 +8,7 @@ html, body {
   justify-content: center;
   align-items: center;
   overscroll-behavior: none;
+  touch-action: none;
 }
 select,
 input[type='range'] {
@@ -26,7 +27,7 @@ audio {
   display: none;
 }
 input[type='range'] {
-  height: 60vh;
+  height: 50vh;
   width: 4rem;
   appearance: none;
   background: none;
