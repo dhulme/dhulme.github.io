@@ -7,6 +7,7 @@ html, body {
   height: 100vh;
   justify-content: center;
   align-items: center;
+  overscroll-behavior: none;
 }
 select,
 input[type='range'] {
