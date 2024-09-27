@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const padTypeSelect = document.getElementById('padTypeSelect');
   const padKeySelect = document.getElementById('padKeySelect');
   const bassOctaveSelect = document.getElementById('bassOctaveSelect');
+  const padHpfControl = document.getElementById('padHpfControl');
   const padLpfControl = document.getElementById('padLpfControl');
-  const bassVolumeControl = document.getElementById('bassVolumeControl');
   const bassLpfControl = document.getElementById('bassLpfControl');
   const padVolumeControl = document.getElementById('padVolumeControl');
   const playButton = document.getElementById('playButton');
@@ -42,6 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
   padLpf.type = 'lowpass';
   padLpf.frequency.value = getLpfFrequency(padLpfControl.value);
 
+  const padHpf = audioContext.createBiquadFilter();
+  padHpf.type = 'highpass';
+  padHpf.frequency.value = getHpfFrequency(padHpfControl.value);
+
   const padGain = audioContext.createGain();
   padGain.gain.value = 1;
 
@@ -49,7 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bassLpf.type = 'lowpass';
   bassLpf.frequency.value = getLpfFrequency(bassLpfControl.value);
 
-  padSource.connect(padLpf);
+  padSource.connect(padHpf);
+  padHpf.connect(padLpf);
   padLpf.connect(padGain);
   padGain.connect(masterGain);
 
@@ -105,16 +110,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  padHpfControl.addEventListener('input', () => {
+    padHpf.frequency.value = getHpfFrequency(padHpfControl.value);
+  });
+
   padLpfControl.addEventListener('input', () => {
     padLpf.frequency.value = getLpfFrequency(padLpfControl.value);
   });
 
   padVolumeControl.addEventListener('input', () => {
     padGain.gain.value = 1 - padVolumeControl.value;
-  });
-
-  bassVolumeControl.addEventListener('input', () => {
-    bassGain.gain.value = 1 - bassVolumeControl.value;
   });
 
   bassLpfControl.addEventListener('input', () => {
@@ -137,17 +142,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const oscillator = audioContext.createOscillator();
-  const bassAdsr = audioContext.createGain();
-  bassAdsr.gain.value = 0;
+  const bassGain = audioContext.createGain();
+  bassGain.gain.value = 0;
   oscillator.type = 'sawtooth';
 
-  const bassGain = audioContext.createGain();
-  bassGain.gain.value = 1;
-
-  oscillator.connect(bassAdsr);
-  bassAdsr.connect(bassLpf);
-  bassLpf.connect(bassGain);
-  bassGain.connect(masterGain);
+  oscillator.connect(bassGain);
+  bassGain.connect(bassLpf);
+  bassLpf.connect(masterGain);
 
   oscillator.start();
 
@@ -177,9 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (note >= getMaxNote()) return;
 
     const currentTime = audioContext.currentTime;
-    bassAdsr.gain.cancelScheduledValues(currentTime);
-    bassAdsr.gain.setValueAtTime(bassAdsr.gain.value, currentTime);
-    bassAdsr.gain.linearRampToValueAtTime(1, currentTime + attackTime);
+    bassGain.gain.cancelScheduledValues(currentTime);
+    bassGain.gain.setValueAtTime(bassGain.gain.value, currentTime);
+    bassGain.gain.linearRampToValueAtTime(1, currentTime + attackTime);
     updateOscillatorFrequency();
   }
 
@@ -188,9 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentTime = audioContext.currentTime;
 
     if (notes.length === 0) {
-      bassAdsr.gain.cancelScheduledValues(currentTime);
-      bassAdsr.gain.setValueAtTime(bassAdsr.gain.value, currentTime);
-      bassAdsr.gain.linearRampToValueAtTime(0, currentTime + releaseTime);
+      bassGain.gain.cancelScheduledValues(currentTime);
+      bassGain.gain.setValueAtTime(bassGain.gain.value, currentTime);
+      bassGain.gain.linearRampToValueAtTime(0, currentTime + releaseTime);
     } else {
       updateOscillatorFrequency();
     }
