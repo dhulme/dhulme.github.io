@@ -68,6 +68,10 @@ button.selected {
   background: white;
   color: black;
 }
+button.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
 main {
   max-width: 25rem;
   flex-grow: 1;
@@ -87,4 +91,18 @@ h1 {
 }
 .flex div {
   width: 100%;
+}
+.error-log {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  display: none;
+}
+.error-log.visible {
+  display: block;
 }
