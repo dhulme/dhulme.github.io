@@ -122,7 +122,6 @@ teams.push({
       svg: `<svg></svg>`,
     }, {
       tla: 'ARB',
-      svg: `<svg></svg>`,
     },
     {
       tla: 'NCM',
@@ -135,8 +134,5 @@ teams.push({
     {
       tla: 'SJA',
     },
-    {
-    tla: 'EMC'
-    }
   ],
 });
