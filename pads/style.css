@@ -1,0 +1,117 @@
+html, body {
+  font-family: Arial, sans-serif;
+  background-color: black;
+  color: white;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+select,
+input[type='range'] {
+  display: block;
+  padding: 0.5rem;
+  font-size: 1rem;
+  width: 100%;
+  margin-bottom: 0.75rem;
+  border-radius: 0.25rem;
+}
+label {
+  font-size: 1rem;
+}
+audio {
+  display: none;
+}
+input[type='range'] {
+  height: 50vh;
+  width: 4rem;
+  appearance: none;
+  background: none;
+  writing-mode: vertical-lr;
+  margin-bottom: 0.25rem;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  width: 100%;
+  background: gray;
+  border-radius: 0.25rem;
+}
+input[type='range']::-webkit-slider-thumb {
+  width: 100%;
+  height: 10%;
+  appearance: none;
+  background: white;
+  border-radius: 0.25rem;
+}
+.ranges {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: space-around;
+}
+.ranges div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+button {
+  width: 100%;
+  height: 3.25rem;
+  font-size: 1rem;
+  background: none;
+  border: 0.1rem solid white;
+  color: white;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+button.selected {
+  background: white;
+  color: black;
+}
+main {
+  max-width: 25rem;
+  flex-grow: 1;
+  position: relative;
+}
+h1 {
+  font-style: italic;
+  font-weight: normal;
+  text-align: center;
+  font-size: 2rem;
+  margin-top: 0;
+}
+
+.flex {
+  display: flex;
+  column-gap: 0.5rem;
+  width: 100%;
+}
+.flex div {
+  width: 100%;
+}
+
+#loadingIndicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: white;
+  font-style: italic;
+  display: none;
+}
+
+#midiButton {
+  position: absolute;
+  top: 0.25rem;
+  left: 0;
+  width: 4rem;
+  height: 2rem;
+}
+
+footer {
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  color: gray;
+  font-style: italic;
+}
