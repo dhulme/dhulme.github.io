@@ -4,6 +4,12 @@ function getLpfFrequency(value) {
   return Math.exp((1 - value) * Math.log(maxValue / minValue)) * minValue;
 }
 
+function noteToNoteName(note) {
+  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const octave = Math.floor(note / 12) - 1;
+  return noteNames[note % 12] + octave;
+}
+
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     navigator.wakeLock.request('screen');
@@ -17,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const padTypeSelect = document.getElementById('padTypeSelect');
   const padKeySelect = document.getElementById('padKeySelect');
   const bassOctaveSelect = document.getElementById('bassOctaveSelect');
+  const bassSplitNoteInput = document.getElementById('bassSplitNoteInput');
   const padLpfControl = document.getElementById('padLpfControl');
   const bassLpfControl = document.getElementById('bassLpfControl');
   const padVolumeControl = document.getElementById('padVolumeControl');
@@ -54,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const notes = [];
   const sustainedNotes = [];
+  let bassSplitNote = 60 + 1; // Default to C4
 
   function resumeAudioContext() {
     if (audioContext.state === 'suspended') {
@@ -62,8 +70,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let playing = false;
+  padTypeSelect.addEventListener('change', () => {
+    if (playing) {
+      playButton.classList.add('playing');
+    }
+  });
+  padKeySelect.addEventListener('change', () => {
+    if (playing) {
+      playButton.classList.add('playing');
+    }
+  });
+
   playButton.addEventListener('click', () => {
-    const audioSrc = padTypeSelect.value + '/' + padKeySelect.value;
+    const audioSrc = `pads/${padTypeSelect.value}/${padKeySelect.value}.ogg`;
+    playButton.classList.remove('playing');
     if (!audioElement.src.includes(audioSrc)) {
       audioElement.src = audioSrc;
       resumeAudioContext();
@@ -96,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   let receivingMidi = false;
+  let sustained = false;
   setInterval(() => {
     if (receivingMidi) {
       midiButton.classList.add('selected');
@@ -116,17 +137,20 @@ document.addEventListener('DOMContentLoaded', () => {
       144: onNoteOn,
       128: onNoteOff,
     };
-    handlers[command](key, value);
+    handlers[command]?.(key, value);
   }
   async function initMidi() {
     const midi = await navigator.requestMIDIAccess();
     midi.inputs.forEach((input) => {
       input.onmidimessage = onMidiMessage;
     });
+    sustained = false;
+    notes.length = 0;
+    sustainedNotes.length = 0;
+    stopNote();
   }
   initMidi();
 
-  let sustained = false;
   function onControlChange(key, value) {
     const handlers = {
       // Pad LPF control
@@ -163,6 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   function onNoteOn(note, value) {
+    if (document.activeElement === bassSplitNoteInput) {
+      bassSplitNoteInput.value = noteToNoteName(note);
+      bassSplitNote = note + 1;
+      bassSplitNoteInput.blur();
+    }
     if (value === 0 || !bassEnabled) {
       onNoteOff(note, value);
       return;
@@ -235,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const attackTime = 0.1;
 
   function getMaxNote() {
-    return 60 - Number(bassOctaveSelect.value) * 12;
+    return bassSplitNote - Number(bassOctaveSelect.value) * 12;
   }
 
   function updateOscillatorFrequency() {
