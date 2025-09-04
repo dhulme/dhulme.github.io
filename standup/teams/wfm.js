@@ -88,6 +88,9 @@ teams.push({
      {
       tla: 'BHS',
       svg: `<svg></svg>`,
+    },
+    {
+      tla: 'EMC',
     }
   ],
 });
