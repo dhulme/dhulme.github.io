@@ -73,7 +73,7 @@
         position: relative;
       }
       ul li:last-child {
-        margin-bottom: 4rem;
+        margin-bottom: 0.5rem;
       }
       .controls {
         position: fixed;
@@ -126,6 +126,85 @@
         border-radius: 50%;
         padding: 0.25rem;
       }
+      .reminders-section {
+        padding: 0.5rem 1rem;
+        margin-bottom: 5rem;
+      }
+      .reminders-section h3 {
+        font-weight: 300;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .reminders-section .day-label {
+        font-weight: 100;
+        opacity: 0.6;
+        font-size: 0.9rem;
+      }
+      .reminders-section .reminder-item {
+        font-size: 1.2rem;
+        padding: 0.25rem 0;
+      }
+      .reminders-section .no-reminders {
+        opacity: 0.4;
+        font-style: italic;
+      }
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+      }
+      .modal {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        width: 90%;
+        max-width: 400px;
+      }
+      main.dark .modal {
+        background: #222;
+        color: white;
+      }
+      .modal h2 {
+        font-weight: 300;
+        margin: 0 0 1rem 0;
+      }
+      .modal label {
+        display: block;
+        font-weight: 300;
+        margin-bottom: 0.25rem;
+      }
+      .modal textarea {
+        width: 100%;
+        padding: 0.4rem;
+        margin-bottom: 0.75rem;
+        box-sizing: border-box;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 300;
+        border: 1px solid #ccc;
+        border-radius: 0.25rem;
+        resize: vertical;
+        min-height: 3rem;
+      }
+      main.dark .modal textarea {
+        background: #333;
+        color: white;
+        border-color: #555;
+      }
+      .modal .modal-close {
+        border-radius: 0.25rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 400;
+      }
     </style>
   </head>
   <body>
@@ -163,6 +242,27 @@
           </li>
         </template>
       </ul>
+      <div class="reminders-section">
+        <h3>Reminders</h3>
+        <div class="day-label" x-text="currentDayName"></div>
+        <template x-for="reminder in todayReminders">
+          <div class="reminder-item" x-text="reminder"></div>
+        </template>
+        <div x-show="todayReminders.length === 0" class="no-reminders">No reminders for today</div>
+      </div>
+      <!-- Reminders Modal -->
+      <div class="modal-overlay" x-show="remindersModalVisible" @click.self="closeRemindersModal">
+        <div class="modal">
+          <h2>Reminders</h2>
+          <template x-for="day in reminderDays" :key="day">
+            <div>
+              <label x-text="day"></label>
+              <textarea :value="reminders[day]" @input="reminders[day] = $event.target.value" :placeholder="`Reminder for ${day}`" rows="2"></textarea>
+            </div>
+          </template>
+          <button class="modal-close" @click="closeRemindersModal">Close</button>
+        </div>
+      </div>
       <div class="controls">
         <div x-show="settingsVisible" class="settings">
           <button @click="toggleTheme" aria-label="Toggle theme">
@@ -179,6 +279,11 @@
                 fill="currentColor"
                 d="M9.62,12L12,5.67L14.37,12M11,3L5.5,17H7.75L8.87,14H15.12L16.25,17H18.5L13,3H11Z"
               />
+            </svg>
+          </button>
+          <button @click="remindersModalVisible = true" aria-label="Reminders">
+            <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M21,19V20H3V19L5,17V11C5,7.9 7.03,5.17 10,4.29C10,4.19 10,4.1 10,4A2,2 0 0,1 12,2A2,2 0 0,1 14,4C14,4.1 14,4.19 14,4.29C16.97,5.17 19,7.9 19,11V17L21,19M14,21A2,2 0 0,1 12,23A2,2 0 0,1 10,21" />
             </svg>
           </button>
           <button @click="toggleHistory">
@@ -251,6 +356,23 @@
           copVisible: false,
           selectedMember: null,
           initialized: false,
+          remindersModalVisible: false,
+          reminderDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          reminders: JSON.parse(localStorage.getItem('reminders') || '{"Monday":"","Tuesday":"","Wednesday":"","Thursday":"","Friday":""}'),
+          get currentDayName() {
+            return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+          },
+          get todayReminders() {
+            const text = (this.reminders[this.currentDayName] || '').trim();
+            return text ? text.split('\n').map(r => r.trim()).filter(Boolean) : [];
+          },
+          closeRemindersModal() {
+            localStorage.setItem('reminders', JSON.stringify(this.reminders));
+            this.remindersModalVisible = false;
+          },
+          refreshReminders() {
+            this.reminders = JSON.parse(localStorage.getItem('reminders') || '{"Monday":"","Tuesday":"","Wednesday":"","Thursday":"","Friday":""}');
+          },
           inputSubmit(event) {
             event.preventDefault();
             this.shuffle();
@@ -259,6 +381,7 @@
             localStorage.setItem('ignore', this.ignoredNamesString);
           },
           shuffle() {
+            this.reminders = JSON.parse(localStorage.getItem('reminders') || '{"Monday":"","Tuesday":"","Wednesday":"","Thursday":"","Friday":""}');
             this.shuffledMembers = [
               ...this.filteredMembers.filter((member) => member.atTop),
               ..._.shuffle(
@@ -315,7 +438,7 @@
             this.initialized = true;
             this.shuffle();
             window.addEventListener('keydown', (event) => {
-              if (event.code === 'Space') {
+              if (event.code === 'Space' && !this.remindersModalVisible) {
                 event.preventDefault();
                 this.selectNextMember();
               }
