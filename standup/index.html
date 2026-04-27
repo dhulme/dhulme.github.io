@@ -297,9 +297,9 @@
           <form @submit="inputSubmit">
             <input
               type="text"
-              x-model="ignoredNamesString"
+              x-model="ignoredNamesInput"
               placeholder="Ignore names"
-              x-effect="ignore"
+              x-effect="ignore()"
             />
           </form>
           <form>
@@ -347,6 +347,7 @@
           selectedTeam: localStorage.getItem('team') || 'WFM Dev',
           teams,
           ignoredNamesString: localStorage.getItem('ignore') || '',
+          ignoredNamesInput: localStorage.getItem('ignore') || '',
           shuffledMembers: [],
           darkTheme: localStorage.getItem('darkTheme') === 'true',
           settingsVisible: false,
@@ -380,9 +381,10 @@
             this.shuffle();
           },
           ignore() {
-            localStorage.setItem('ignore', this.ignoredNamesString);
+            localStorage.setItem('ignore', this.ignoredNamesInput);
           },
           shuffle() {
+            this.ignoredNamesString = this.ignoredNamesInput;
             this.reminders = JSON.parse(localStorage.getItem('reminders') || '{"Every day":"","Monday":"","Tuesday":"","Wednesday":"","Thursday":"","Friday":""}');
             this.shuffledMembers = [
               ...this.filteredMembers.filter((member) => member.atTop),
@@ -447,7 +449,12 @@
             });
           },
           loadAlternateImage(element) {
-            element.target.src = element.target.src.replace('svg', 'png');
+            if (element.target.src.includes('.png')) {
+              element.target.onerror = null;
+              element.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23ccc'/%3E%3C/svg%3E";
+            } else {
+              element.target.src = element.target.src.replace('.svg', '.png');
+            }
           },
           selectMember(member) {
             this.selectedMember = member;

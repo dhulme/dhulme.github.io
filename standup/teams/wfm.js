@@ -92,7 +92,6 @@ teams.push({
     },
     {
       tla: 'BHS',
-      svg: `<svg></svg>`,
       jiraId: '712020:9d680c32-0676-4e42-8e20-baad9b0df0cc'
     },
     {
