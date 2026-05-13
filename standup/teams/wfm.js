@@ -133,6 +133,12 @@ teams.push({
     {
       tla: 'ATC',
       jriaId: '712020:789e4cfd-882f-4f7e-bac4-bb14bfd3f7dc'
+    },
+      {
+      tla: 'SHY'
+    },
+    {
+      tla: 'HKK'
     }
   ],
 });
@@ -168,11 +174,5 @@ teams.push({
       tla: 'NCM',
       jiraId: '5bd7209d719d5d3fa4c4d450'
     },
-    {
-      tla: 'SHY'
-    },
-    {
-      tla: 'HKK'
-    }
   ],
 });
