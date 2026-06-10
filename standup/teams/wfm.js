@@ -137,7 +137,7 @@ teams.push({
     },
       {
       tla: 'SHY',
-      jiraId: '712020%3A86035ff4-7b08-4a55-9a0f-4e8acab0d127'
+      jiraId: '712020:86035ff4-7b08-4a55-9a0f-4e8acab0d127'
     },
     {
       tla: 'HKK',
