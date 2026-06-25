@@ -365,8 +365,12 @@
           remindersModalVisible: false,
           reminderDays: ['Every day', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
           reminders: JSON.parse(localStorage.getItem('reminders') || '{"Every day":"","Monday":"","Tuesday":"","Wednesday":"","Thursday":"","Friday":""}'),
-          get currentDayName() {
+          currentDayName: '',
+          getCurrentDayName() {
             return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()];
+          },
+          syncCurrentDayName() {
+            this.currentDayName = this.getCurrentDayName();
           },
           get todayReminders() {
             const everyDay = (this.reminders['Every day'] || '').trim();
@@ -379,6 +383,7 @@
             this.remindersModalVisible = false;
           },
           refreshReminders() {
+            this.syncCurrentDayName();
             this.reminders = JSON.parse(localStorage.getItem('reminders') || '{"Every day":"","Monday":"","Tuesday":"","Wednesday":"","Thursday":"","Friday":""}');
           },
           inputSubmit(event) {
@@ -390,6 +395,7 @@
           },
           shuffle() {
             this.ignoredNamesString = this.ignoredNamesInput;
+            this.syncCurrentDayName();
             this.reminders = JSON.parse(localStorage.getItem('reminders') || '{"Every day":"","Monday":"","Tuesday":"","Wednesday":"","Thursday":"","Friday":""}');
             this.shuffledMembers = [
               ...this.filteredMembers.filter((member) => member.atTop),
@@ -445,6 +451,7 @@
           init() {
             if (this.initialized) return;
             this.initialized = true;
+            this.syncCurrentDayName();
             this.shuffle();
             window.addEventListener('keydown', (event) => {
               if (event.code === 'Space' && !this.remindersModalVisible) {
