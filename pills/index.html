@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#0f766e">
+	<title>Medication reminder</title>
+	<style>
+		:root {
+			color-scheme: light;
+			font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			color: #17313a;
+			background: #edf7f5;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			display: grid;
+			place-items: center;
+			padding: 24px;
+			background: radial-gradient(circle at top right, #c5eee8, transparent 38rem), #edf7f5;
+		}
+
+		main {
+			width: min(100%, 700px);
+			background: #fff;
+			border-radius: 24px;
+			box-shadow: 0 18px 50px rgb(33 83 79 / 16%);
+			overflow: hidden;
+		}
+
+		header {
+			padding: 32px 32px 25px;
+			color: #fff;
+			background: #0f766e;
+		}
+
+		h1, h2, p { margin-top: 0; }
+
+		h1 { margin-bottom: 8px; font-size: clamp(1.7rem, 5vw, 2.35rem); }
+
+		.date { margin: 0; color: #d4f5f0; font-size: 1.05rem; }
+
+		.content { padding: 28px 32px 32px; }
+
+		.intro { color: #4b6269; line-height: 1.5; }
+
+		.medicines { display: grid; gap: 16px; margin: 24px 0; }
+
+		.medicine {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			gap: 16px;
+			align-items: center;
+			padding: 20px;
+			border: 1px solid #d8e8e5;
+			border-radius: 16px;
+			background: #f8fcfb;
+		}
+
+		.count {
+			display: grid;
+			place-items: center;
+			min-width: 66px;
+			min-height: 66px;
+			padding: 8px;
+			border-radius: 50%;
+			color: #075a53;
+			background: #c9f0ea;
+			font-size: 1.45rem;
+			font-weight: 800;
+			text-align: center;
+		}
+
+		.count small { display: block; font-size: .68rem; font-weight: 700; }
+
+		.medicine h2 { margin: 0 0 4px; font-size: 1.2rem; }
+		.medicine p { margin: 0; color: #4b6269; line-height: 1.45; }
+
+		.empty {
+			padding: 22px;
+			border-radius: 16px;
+			color: #405b61;
+			background: #f2f5f5;
+			text-align: center;
+		}
+
+		label { display: block; margin: 24px 0 8px; font-weight: 700; }
+		input { width: 100%; padding: 12px; border: 1px solid #b9d0cd; border-radius: 10px; font: inherit; color: inherit; }
+
+		.hint { margin: 10px 0 0; color: #647b80; font-size: .88rem; line-height: 1.4; }
+
+		@media (max-width: 520px) {
+			body { padding: 0; }
+			main { min-height: 100vh; border-radius: 0; }
+			header, .content { padding-left: 20px; padding-right: 20px; }
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<header>
+			<h1>Medication reminder</h1>
+			<p class="date" id="display-date"></p>
+		</header>
+
+		<section class="content" aria-live="polite">
+			<p class="intro" id="intro"></p>
+			<div class="medicines" id="medicines"></div>
+
+			<label for="selected-date">Check another date</label>
+			<input id="selected-date" type="date">
+		</section>
+	</main>
+
+	<script>
+		/*
+			Each medication has an ISO start date and a series of dosage periods.
+			Use durationDays: null for the final, ongoing dosage period.
+		*/
+		const medications = [
+			{
+				name: "Sulfasalazine",
+				startDate: "2026-07-09",
+				schedule: [
+					{ durationDays: 7, quantity: 1, time: "any time", instructions: "Take one tablet daily." },
+					{ durationDays: 7, quantity: 2, time: "any time", instructions: "Take two tablets daily." },
+					{ durationDays: 7, quantity: 3, time: "any time", instructions: "Take three tablets daily." },
+					{ durationDays: null, quantity: 4, time: "any time", instructions: "Take four tablets daily." }
+				]
+			},
+			{
+				name: "Prednisolone",
+				startDate: "2026-07-10",
+				schedule: [
+					{ durationDays: 7, quantity: 4, time: "morning", instructions: "Take four tablets in the morning." },
+					{ durationDays: 7, quantity: 2, time: "morning", instructions: "Take two tablets in the morning." },
+					{ durationDays: 7, quantity: 1, time: "morning", instructions: "Take one tablet in the morning." }
+				]
+			}
+		];
+
+		const dateInput = document.querySelector("#selected-date");
+		const displayDate = document.querySelector("#display-date");
+		const intro = document.querySelector("#intro");
+		const medicines = document.querySelector("#medicines");
+
+		function localDateString(date = new Date()) {
+			const offset = date.getTimezoneOffset();
+			return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 10);
+		}
+
+		function daysBetween(startDate, date) {
+			const start = Date.parse(`${startDate}T00:00:00Z`);
+			const target = Date.parse(`${date}T00:00:00Z`);
+			return Math.floor((target - start) / 86_400_000);
+		}
+
+		function dosageForDate(medication, date) {
+			let day = daysBetween(medication.startDate, date);
+			if (day < 0) return null;
+
+			for (const period of medication.schedule) {
+				if (period.durationDays === null || day < period.durationDays) return period;
+				day -= period.durationDays;
+			}
+			return null;
+		}
+
+		function formatDate(date) {
+			return new Intl.DateTimeFormat("en-GB", {
+				weekday: "long", day: "numeric", month: "long", year: "numeric"
+			}).format(new Date(`${date}T12:00:00`));
+		}
+
+		function pluralise(quantity) {
+			return quantity === 1 ? "tablet" : "tablets";
+		}
+
+		function render(date) {
+			displayDate.textContent = formatDate(date);
+			const doses = medications
+				.map(medication => ({ medication, dosage: dosageForDate(medication, date) }))
+				.filter(({ dosage }) => dosage !== null);
+
+			intro.textContent = doses.length
+				? "Here is the medication scheduled for this day."
+				: "There is no medication scheduled for this day.";
+
+			medicines.replaceChildren();
+			if (!doses.length) {
+				medicines.innerHTML = '<div class="empty">No medication is due.</div>';
+				return;
+			}
+
+			for (const { medication, dosage } of doses) {
+				const item = document.createElement("article");
+				item.className = "medicine";
+				item.innerHTML = `
+					<div class="count" aria-label="${dosage.quantity} ${pluralise(dosage.quantity)}">
+						${dosage.quantity}<small>${pluralise(dosage.quantity)}</small>
+					</div>
+					<div>
+						<h2>${medication.name}</h2>
+            <p><strong>Timing:</strong> ${dosage.time}</p>
+						<p><small>${dosage.instructions}.</small></p>
+					</div>`;
+				medicines.append(item);
+			}
+		}
+
+		dateInput.value = localDateString();
+		dateInput.addEventListener("change", event => render(event.target.value));
+		render(dateInput.value);
+	</script>
+</body>
+</html>
