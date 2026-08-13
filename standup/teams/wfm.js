@@ -137,7 +137,8 @@ teams.push({
     },
     {
       tla: 'ATC',
-      jiraId: '712020:789e4cfd-882f-4f7e-bac4-bb14bfd3f7dc'
+      jiraId: '712020:789e4cfd-882f-4f7e-bac4-bb14bfd3f7dc',
+      history: true
     },
       {
       tla: 'SHY',
@@ -151,7 +152,8 @@ teams.push({
     },
     {
       tla: 'RSC',
-      jiraId: '712020:866e4c51-f727-426e-a7bb-7cd97eda6b89'
+      jiraId: '712020:866e4c51-f727-426e-a7bb-7cd97eda6b89',
+      history: true
     },
     {
       tla: 'MUS',
@@ -196,7 +198,8 @@ teams.push({
     },
     {
       tla: 'NCM',
-      jiraId: '5bd7209d719d5d3fa4c4d450'
+      jiraId: '5bd7209d719d5d3fa4c4d450',
+      history: true
     },
   ],
 });
