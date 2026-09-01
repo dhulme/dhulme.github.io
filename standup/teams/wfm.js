@@ -148,7 +148,7 @@ teams.push({
     {
       tla: 'HKK',
       jiraId: '6331c9f6409249995ee97273',
-      history: true
+      history: false
     },
     {
       tla: 'RSC',
