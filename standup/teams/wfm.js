@@ -164,7 +164,8 @@ teams.push({
     {
       tla: 'HTL',
       svg: ``,
-      jiraId: '712020:011981d4-e048-43c9-ab4f-3e5e4358f112'
+      jiraId: '712020:011981d4-e048-43c9-ab4f-3e5e4358f112',
+      history: true
     }
   ],
 });

@@ -215,7 +215,7 @@
   <body>
     <main x-data="main" :class="darkTheme && 'dark'" x-init="init">
       <ul>
-        <template x-for="member in displayedMembers">
+        <template x-for="member in displayedMembers" :key="member.tla">
           <li :class="member.history && 'history'">
             <button
               :class="selectedMember === member ? 'photo-button selected' : 'photo-button'"
@@ -308,7 +308,7 @@
             />
           </form>
           <form>
-            <select x-model="selectedTeam" x-effect="updateTeam">
+            <select x-model="selectedTeam" @change="updateTeam">
               <template x-for="team in teams">
                 <option
                   x-text="team.name"
@@ -320,7 +320,7 @@
         </div>
 
         <div class="bottom-controls">
-          <button @click="shuffle" aria-label="Refresh">
+          <button @click="shuffle; $el.blur()" aria-label="Refresh">
             <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
@@ -388,15 +388,16 @@
           },
           inputSubmit(event) {
             event.preventDefault();
-            this.shuffle();
           },
           ignore() {
+            this.ignoredNamesString = this.ignoredNamesInput;
             localStorage.setItem('ignore', this.ignoredNamesInput);
           },
           shuffle() {
             this.ignoredNamesString = this.ignoredNamesInput;
             this.syncCurrentDayName();
             this.reminders = JSON.parse(localStorage.getItem('reminders') || '{"Every day":"","Monday":"","Tuesday":"","Wednesday":"","Thursday":"","Friday":""}');
+            this.selectedMember = null;
             this.shuffledMembers = [
               ...this.filteredMembers.filter((member) => member.atTop),
               ..._.shuffle(
@@ -424,8 +425,14 @@
             return this.team.members.filter((member) => member.history);
           },
           get displayedMembers() {
+            const ignoredNames = this.ignoredNamesString
+              .toUpperCase()
+              .split(',')
+              .map((name) => name.trim());
             return [
-              ...this.shuffledMembers,
+              ...this.shuffledMembers.filter(
+                (member) => !ignoredNames.includes(member.tla),
+              ),
               ...(this.historyVisible ? this.historyMembers : []),
             ];
           },
@@ -454,7 +461,14 @@
             this.syncCurrentDayName();
             this.shuffle();
             window.addEventListener('keydown', (event) => {
-              if (event.code === 'Space' && !this.remindersModalVisible) {
+              const isFormControl = ['INPUT', 'TEXTAREA', 'SELECT'].includes(
+                event.target.tagName,
+              );
+              if (
+                event.code === 'Space' &&
+                !isFormControl &&
+                !this.remindersModalVisible
+              ) {
                 event.preventDefault();
                 this.selectNextMember();
               }
@@ -499,14 +513,24 @@
             });
           },
           selectNextMember() {
-            if (this.displayedMembers.length === 0) return;
-            
+            const membersByTla = new Map(
+              this.displayedMembers.map((member) => [member.tla, member]),
+            );
+            const orderedMembers = [...document.querySelectorAll('ul li .name')]
+              .map((element) => membersByTla.get(element.textContent.trim()))
+              .filter(Boolean);
+            if (orderedMembers.length === 0) return;
+
             let nextIndex = 0;
             if (this.selectedMember) {
-              const currentIndex = this.displayedMembers.indexOf(this.selectedMember);
-              nextIndex = (currentIndex + 1) % this.displayedMembers.length;
+              const currentIndex = orderedMembers.findIndex(
+                (member) => member.tla === this.selectedMember.tla,
+              );
+              if (currentIndex >= 0) {
+                nextIndex = (currentIndex + 1) % orderedMembers.length;
+              }
             }
-            this.selectMember(this.displayedMembers[nextIndex]);
+            this.selectMember(orderedMembers[nextIndex]);
           },
         }));
       });
