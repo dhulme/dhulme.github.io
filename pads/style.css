@@ -111,6 +111,14 @@ h1 {
   height: 2rem;
 }
 
+#bassButton {
+  position: absolute;
+  top: 0.25rem;
+  right: 0;
+  width: 4rem;
+  height: 2rem;
+}
+
 footer {
   width: 100%;
   text-align: center;

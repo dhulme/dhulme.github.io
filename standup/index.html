@@ -429,10 +429,19 @@
               .toUpperCase()
               .split(',')
               .map((name) => name.trim());
+            const displayedTlas = new Set(
+              this.shuffledMembers
+                .filter((member) => !ignoredNames.includes(member.tla))
+                .map((member) => member.tla),
+            );
+            const addedMembers = this.filteredMembers.filter(
+              (member) => !displayedTlas.has(member.tla),
+            );
             return [
               ...this.shuffledMembers.filter(
                 (member) => !ignoredNames.includes(member.tla),
               ),
+              ...addedMembers,
               ...(this.historyVisible ? this.historyMembers : []),
             ];
           },

@@ -20,6 +20,7 @@ navigator.wakeLock.request('screen');
 
 document.addEventListener('DOMContentLoaded', () => {
   const audioElement = document.getElementById('audio');
+  const boostAudioElement = document.createElement('audio');
   const padTypeSelect = document.getElementById('padTypeSelect');
   const padKeySelect = document.getElementById('padKeySelect');
   const bassOctaveSelect = document.getElementById('bassOctaveSelect');
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const bassVolumeControl = document.getElementById('bassVolumeControl');
   const playButton = document.getElementById('playButton');
   const bassButton = document.getElementById('bassButton');
+  const boostButton = document.getElementById('boostButton');
   const loadingIndicator = document.getElementById('loadingIndicator');
   const midiButton = document.getElementById('midiButton');
 
@@ -48,6 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const padGain = audioContext.createGain();
   padGain.gain.value = 1;
 
+  const boostGain = audioContext.createGain();
+  boostGain.gain.value = 0;
+
   const bassGain2 = audioContext.createGain();
   bassGain2.gain.value = 0.5;
 
@@ -58,6 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
   padSource.connect(padLpf);
   padLpf.connect(padGain);
   padGain.connect(masterGain);
+
+  const boostSource = audioContext.createMediaElementSource(boostAudioElement);
+  boostSource.connect(boostGain);
+  boostGain.connect(masterGain);
 
   const notes = [];
   const sustainedNotes = [];
@@ -78,6 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
   padKeySelect.addEventListener('change', () => {
     if (playing) {
       playButton.classList.add('playing');
+    }
+    if (boostEnabled) {
+      setBoostSource();
     }
   });
 
@@ -213,10 +225,41 @@ document.addEventListener('DOMContentLoaded', () => {
   midiButton.addEventListener('click', initMidi);
 
   let bassEnabled = false;
-  bassButton.addEventListener('click', async () => {
+  bassButton.addEventListener('click', () => {
     bassEnabled = !bassEnabled;
     resumeAudioContext();
     bassButton.classList[bassEnabled ? 'add' : 'remove']('selected');
+  });
+
+  let boostEnabled = false;
+  const boostFadeTime = 3;
+
+  function setBoostSource() {
+    const audioSrc = `pads/hulmongous/${padKeySelect.value}.ogg`;
+    if (!boostAudioElement.src.includes(audioSrc)) {
+      boostAudioElement.src = audioSrc;
+      boostAudioElement.load();
+    }
+    resumeAudioContext();
+    boostAudioElement.play();
+  }
+
+  boostButton.addEventListener('click', () => {
+    boostEnabled = !boostEnabled;
+    resumeAudioContext();
+    boostButton.classList[boostEnabled ? 'add' : 'remove']('selected');
+
+    const currentTime = audioContext.currentTime;
+    boostGain.gain.cancelScheduledValues(currentTime);
+    boostGain.gain.setValueAtTime(boostGain.gain.value, currentTime);
+    boostGain.gain.linearRampToValueAtTime(
+      boostEnabled ? 1 : 0,
+      currentTime + boostFadeTime
+    );
+
+    if (boostEnabled) {
+      setBoostSource();
+    }
   });
 
   padVolumeControl.addEventListener('input', () => {
@@ -238,6 +281,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (audioElement.duration - audioElement.currentTime <= buffer) {
       audioElement.currentTime = 10;
+    }
+  });
+
+  boostAudioElement.addEventListener('timeupdate', () => {
+    const buffer = 3;
+
+    if (boostAudioElement.duration - boostAudioElement.currentTime <= buffer) {
+      boostAudioElement.currentTime = 10;
     }
   });
 
