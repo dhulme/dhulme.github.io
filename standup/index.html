@@ -286,6 +286,18 @@
               />
             </svg>
           </button>
+          <button
+            @click="toggleAlphabeticalSort"
+            :aria-label="alphabeticalSort ? 'Use shuffled order' : 'Sort alphabetically'"
+            :title="alphabeticalSort ? 'Use shuffled order' : 'Sort alphabetically'"
+          >
+            <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M14 20h7v-2h-7v2zm0-5h7v-2h-7v2zm0-5h7V8h-7v2zM3 18h8v-2H3v2zm0-5h6v-2H3v2zm0-5h4V6H3v2zm12-5v2h3v14h2V5h3l-4-4-4 4z"
+              />
+            </svg>
+          </button>
           <button @click="remindersModalVisible = true" aria-label="Reminders">
             <svg style="width: 24px; height: 24px" viewBox="0 0 24 24">
               <path fill="currentColor" d="M21,19V20H3V19L5,17V11C5,7.9 7.03,5.17 10,4.29C10,4.19 10,4.1 10,4A2,2 0 0,1 12,2A2,2 0 0,1 14,4C14,4.1 14,4.19 14,4.29C16.97,5.17 19,7.9 19,11V17L21,19M14,21A2,2 0 0,1 12,23A2,2 0 0,1 10,21" />
@@ -355,6 +367,7 @@
           ignoredNamesInput: localStorage.getItem('ignore') || '',
           shuffledMembers: [],
           darkTheme: localStorage.getItem('darkTheme') === 'true',
+          alphabeticalSort: localStorage.getItem('alphabeticalSort') === 'true',
           settingsVisible: false,
           namesVisible: localStorage.getItem('namesVisible') !== 'false',
           historyVisible: localStorage.getItem('historyVisible') === 'true',
@@ -437,13 +450,16 @@
             const addedMembers = this.filteredMembers.filter(
               (member) => !displayedTlas.has(member.tla),
             );
-            return [
+            const displayedMembers = [
               ...this.shuffledMembers.filter(
                 (member) => !ignoredNames.includes(member.tla),
               ),
               ...addedMembers,
               ...(this.historyVisible ? this.historyMembers : []),
             ];
+            return this.alphabeticalSort
+              ? displayedMembers.sort((a, b) => a.tla.localeCompare(b.tla))
+              : displayedMembers;
           },
           get team() {
             return teams.find((team) => team.name === this.selectedTeam);
@@ -459,6 +475,10 @@
           toggleNames() {
             this.namesVisible = !this.namesVisible;
             localStorage.setItem('namesVisible', this.namesVisible);
+          },
+          toggleAlphabeticalSort() {
+            this.alphabeticalSort = !this.alphabeticalSort;
+            localStorage.setItem('alphabeticalSort', this.alphabeticalSort);
           },
           toggleHistory() {
             this.historyVisible = !this.historyVisible;
