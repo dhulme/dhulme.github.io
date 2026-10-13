@@ -172,6 +172,10 @@ teams.push({
       tla: 'ARB',
       jiraId: '712020:e0bb5a46-2f2c-4641-9738-ef678227ca96'
     },
+    {
+      tla: 'AWH',
+      jiraId: '712020:7a4b4652-f8f4-4bd9-8620-de18433ac751'
+    }
   ],
 });
 
